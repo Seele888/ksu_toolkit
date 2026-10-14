@@ -262,18 +262,10 @@ toolkit_getinfo:
 	if (!fd)
 		goto fail;
 
-	// handles ksu_get_info compat, legacy and one with uapi ver
-	// what we can do is to just prepare 4x u32 space (ksu_get_info_cmd) then act accordingly
 	struct ksu_get_info_cmd *getinfo_cmd = (struct ksu_get_info_cmd *)sp;
-	getinfo_cmd->uapi_version = 0;
-
 	ret = sys_ioctl(fd, KSU_IOCTL_GET_INFO, (long)getinfo_cmd);
-	if (ret) {
-		// if new ioctl fails, we try again, this time trying legacy
-		ret = sys_ioctl(fd, KSU_IOCTL_GET_INFO_LEGACY, (long)getinfo_cmd);
-		if (ret)
-			goto fail;
-	}			
+	if (ret)
+		goto fail;		
 
 	dumb_itoa(getinfo_cmd->version, 6, &getinfo_buf_version[8]);
 	print_out(getinfo_buf_version, sizeof(getinfo_buf_version) - 1);

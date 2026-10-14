@@ -31,13 +31,6 @@ struct sulog_entry_rcv_ptr {
 	uint64_t uptime_ptr; // uptime
 };
 
-struct ksu_get_info_legacy_cmd {
-	uint32_t version; // Output: KERNEL_SU_VERSION
-	uint32_t flags; // Output: KSU_GET_INFO_FLAG_* bits
-	uint32_t features; // Output: max feature ID supported
-};
-#define KSU_IOCTL_GET_INFO_LEGACY _IOC(_IOC_READ, 'K', 2, 0)
-
 struct ksu_get_info_cmd {
 	uint32_t version; /* Output: KERNEL_SU_VERSION */
 	uint32_t flags; /* Output: KSU_GET_INFO_FLAG_* bits */
