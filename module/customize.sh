@@ -56,7 +56,7 @@ toolkit_hot_install() {
 	) & # fork in background
 }
 
-if [ "$MOUNTIFY_HAS_HOT_INSTALL" = true ]; then
+if [ "$KSU_HAS_HOT_INSTALL" = true ] || [ "$MOUNTIFY_HAS_HOT_INSTALL" = true ]; then
 	export MODULE_HOT_INSTALL_REQUEST="true"
 else
 	echo "[?] hot install?"
