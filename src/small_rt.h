@@ -13,7 +13,7 @@
 // syscall de-wrappers
 #if defined(__aarch64__)
 __attribute__((noinline, noipa))
-static long __syscall(long n, long a, long b, long c, long d, long e, long f)
+static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f)
 {
 	register long 
 		x8 asm("x8") = n,
@@ -34,7 +34,7 @@ static long __syscall(long n, long a, long b, long c, long d, long e, long f)
 
 #elif defined(__arm__)
 __attribute__((noinline, noipa))
-static long __syscall(long n, long a, long b, long c, long d, long e, long f) {
+static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f) {
 	register long
 		r7 asm("r7") = n,
 		r0 asm("r0") = a,
@@ -54,7 +54,7 @@ static long __syscall(long n, long a, long b, long c, long d, long e, long f) {
 
 #elif defined(__x86_64__)
 __attribute__((noinline, noipa))
-static long __syscall(long n, long a, long b, long c, long d, long e, long f) {
+static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f) {
 	long ret;
 	asm volatile(
 		"mov %5, %%r10\n"
@@ -71,7 +71,7 @@ static long __syscall(long n, long a, long b, long c, long d, long e, long f) {
 
 #elif defined(__i386__)
 __attribute__((noinline, noipa))
-static long __syscall(long n, long a, long b, long c, long d, long e, long f)
+static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f)
 {
 	long _eax = (long)(n);
 	long _arg6 = (long)(f);
@@ -95,6 +95,11 @@ static long __syscall(long n, long a, long b, long c, long d, long e, long f)
 }
 #endif
 
+#define __syscall_pad(_1, _2, _3, _4, _5, _6, _7, ...) _1, _2, _3, _4, _5, _6
+
+// usage: syscall(SYS_getuid), syscall(SYS_newuname, &buf)
+#define __syscall(name, ...) __syscall_raw(name, __syscall_pad(__VA_ARGS__ __VA_OPT__(,) 0, 0, 0, 0, 0, 0, 0))
+
 #if 0 // this is here so YOU can copy-paste below C entry
 __attribute__((used))
 void prep_main(long *sp)
@@ -104,7 +109,7 @@ void prep_main(long *sp)
 	char **envp = argv + argc + 1; // we need to offset it by the number of argc's!
 
 	long exit_code = c_main(argc, argv, envp);
-	__syscall(SYS_exit, exit_code, NONE, NONE, NONE, NONE, NONE);
+	__syscall(SYS_exit, exit_code);
 	__builtin_unreachable();
 }
 #endif
