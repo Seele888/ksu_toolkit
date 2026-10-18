@@ -95,10 +95,21 @@ static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f
 }
 #endif
 
-#define __syscall_pad(_1, _2, _3, _4, _5, _6, _7, ...) _1, _2, _3, _4, _5, _6
+#define __syscall_0(name) 			__syscall_raw(name, 0, 0, 0, 0, 0, 0)
+#define __syscall_1(name, a) 			__syscall_raw(name, a, 0, 0, 0, 0, 0)
+#define __syscall_2(name, a, b)			__syscall_raw(name, a, b, 0, 0, 0, 0)
+#define __syscall_3(name, a, b, c)		__syscall_raw(name, a, b, c, 0, 0, 0)
+#define __syscall_4(name, a, b, c, d)		__syscall_raw(name, a, b, c, d, 0, 0)
+#define __syscall_5(name, a, b, c, d, e)	__syscall_raw(name, a, b, c, d, e, 0)
+#define __syscall_6(name, a, b, c, d, e, f)	__syscall_raw(name, a, b, c, d, e, f)
+
+#define __syscall_arg_n(_1, _2, _3, _4, _5, _6, _7, N, ...) N
+#define __syscall_count_args(...) __syscall_arg_n(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
+#define __syscall_concat(a, b) a##b
+#define __syscall_exp(func, arg) __syscall_concat(func, arg)
 
 // usage: syscall(SYS_getuid), syscall(SYS_newuname, &buf)
-#define __syscall(name, ...) __syscall_raw(name, __syscall_pad(__VA_ARGS__ __VA_OPT__(,) 0, 0, 0, 0, 0, 0, 0))
+#define __syscall(...) __syscall_exp(__syscall_, __syscall_count_args(__VA_ARGS__))(__VA_ARGS__)
 
 #if 0 // this is here so YOU can copy-paste below C entry
 __attribute__((used))
