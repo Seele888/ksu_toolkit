@@ -28,18 +28,18 @@ cpu_set_t cpuset;
 
 #if defined(__aarch64__)
 static long payload_faccessat2() {	
-	return __syscall(SYS_faccessat2, AT_FDCWD, (long)devnull, F_OK, 0, NONE, NONE);
+	return __syscall(SYS_faccessat2, AT_FDCWD, (long)devnull, F_OK, 0);
 }
 #endif
 
 static long payload_execveat() {	
-	return __syscall(SYS_execveat, AT_FDCWD, (long)devnull, NULL, NULL, 0, NONE);
+	return __syscall(SYS_execveat, AT_FDCWD, (long)devnull, NULL, NULL, 0);
 }
 
 __attribute__((always_inline))
 static bool run_forked_payload(long (*payload_fn)())
 {
-	long pid = __syscall(SYS_clone, SIGCHLD, NULL, NULL, NULL, NULL, NULL);
+	long pid = __syscall(SYS_clone, SIGCHLD, NULL, NULL, NULL, NULL);
 	if (pid == -1)
 		return false;
 
@@ -48,15 +48,15 @@ static bool run_forked_payload(long (*payload_fn)())
 	
 	long ret = payload_fn();
 	if (ret == -ENOSYS)
-		__syscall(SYS_exit, 123, NONE, NONE, NONE, NONE, NONE);
+		__syscall(SYS_exit, 123);
 	else
-		__syscall(SYS_exit, 0, NONE, NONE, NONE, NONE, NONE);
+		__syscall(SYS_exit, 0);
 	__builtin_unreachable();
 
 main_thread:
 
 	int status = 0;
-	__syscall(SYS_wait4, pid, &status, 0, NULL, NULL, NULL);
+	__syscall(SYS_wait4, pid, &status, 0, NULL);
 	if (WIFSIGNALED(status))
 		return false; // means it died weirdly
 
@@ -91,7 +91,7 @@ static unsigned long long time_now_ns() {
 #else
 	clk_id = CLOCK_MONOTONIC;
 #endif
-	__syscall(SYS_clock_gettime32, clk_id, (long)&ts32, NONE, NONE, NONE, NONE);
+	__syscall(SYS_clock_gettime32, clk_id, (long)&ts32);
 
 	return (unsigned long long)ts32.tv_sec * 1000000000ULL + ts32.tv_nsec;
 }
@@ -108,7 +108,7 @@ static unsigned long long time_now_ns() {
 #else
 	clk_id = CLOCK_MONOTONIC;
 #endif
-	__syscall(SYS_clock_gettime, clk_id, (long)&ts, NONE, NONE, NONE, NONE);
+	__syscall(SYS_clock_gettime, clk_id, (long)&ts);
 	return (unsigned long long)ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 }
 #endif // __arm__
@@ -142,7 +142,7 @@ static void run_bench(long sc, long a1, long a2, long a3, long a4, long a5, long
 __attribute__((always_inline))
 static int get_highest_cpu_core()
 {
-	__syscall(SYS_sched_getaffinity, 0, sizeof(cpuset), &cpuset, NONE, NONE, NONE);
+	__syscall(SYS_sched_getaffinity, 0, sizeof(cpuset), &cpuset);
 
 	// we dont really have much cores on our targets, so first member is enough. assumes LE for core 0~31!
 	uint32_t lowmask = *(uint32_t __attribute__((may_alias)) *)&cpuset;
@@ -159,7 +159,7 @@ static bool affine_to_cpu(int cpu)
 {
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-	return !!!__syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset, NONE, NONE, NONE);
+	return !!!__syscall(SYS_sched_setaffinity, 0, sizeof(cpuset), &cpuset);
 }
 
 __attribute__((always_inline))
@@ -172,9 +172,9 @@ static int bench_main(char **argv)
 	bool has_execveat = run_forked_payload(payload_execveat);
 
 #define PR_GET_SECCOMP	21
-	int seccomp_status = __syscall(SYS_prctl, PR_GET_SECCOMP, NONE, NONE, NONE, NONE, NONE);
+	int seccomp_status = __syscall(SYS_prctl, PR_GET_SECCOMP);
 
-	bool is_root = !!!__syscall(SYS_getuid, NONE, NONE, NONE, NONE, NONE, NONE);
+	bool is_root = !!!__syscall(SYS_getuid);
 
 	int pinned_cpu_core;
 	if (argv[2])
@@ -184,12 +184,12 @@ static int bench_main(char **argv)
 
 	affine_to_cpu(pinned_cpu_core);
 
-	__syscall(SYS_setpriority, 0, 0, -20, NONE, NONE, NONE);
+	__syscall(SYS_setpriority, 0, 0, -20);
 
 	struct stat st;
 
 	struct new_utsname uname;
-	__syscall(SYS_uname, (long)&uname, NONE, NONE, NONE, NONE, NONE); // SYS_newuname on syscall table
+	__syscall(SYS_uname, (long)&uname); // SYS_newuname on syscall table
 
 	// maybe writev
 	print_out(run_template, sizeof(run_template) - 1);
@@ -204,7 +204,7 @@ static int bench_main(char **argv)
 	dumb_itoa(pinned_cpu_core, 2, cpu_core_template + 9);
 	print_out(cpu_core_template, sizeof(cpu_core_template) -1 );
 
-	if (!__syscall(SYS_faccessat, AT_FDCWD, (long)"/system/bin/su", F_OK, NONE, NONE, NONE))
+	if (!__syscall(SYS_faccessat, AT_FDCWD, (long)"/system/bin/su", F_OK))
 		sucompat_seccomp_root_template[14] = '1';
 
 	if (seccomp_status == 0)

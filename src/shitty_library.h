@@ -98,10 +98,10 @@ static void *toolkit_malloc(unsigned long size)
 {
 	size = (size + 7) & ~7; // align 8 bytes up
 
-	long current_brk = __syscall(SYS_brk, 0, NONE, NONE, NONE, NONE, NONE);
+	long current_brk = __syscall(SYS_brk, 0);
 
 	long new_brk = current_brk + size;
-	long ret = __syscall(SYS_brk, new_brk, NONE, NONE, NONE, NONE, NONE);
+	long ret = __syscall(SYS_brk, new_brk);
 	if (ret != new_brk)
 		return nullptr;
 
@@ -116,13 +116,13 @@ static void *toolkit_malloc(unsigned long size)
 __attribute__((noinline))
 static void print_out(const char *buf, unsigned long len)
 {
-	__syscall(SYS_write, 1, (long)buf, len, NONE, NONE, NONE);
+	__syscall(SYS_write, 1, (long)buf, len);
 }
 
 __attribute__((noinline))
 static void print_err(const char *buf, unsigned long len)
 {
-	__syscall(SYS_write, 2, (long)buf, len, NONE, NONE, NONE);
+	__syscall(SYS_write, 2, (long)buf, len);
 }
 
 #ifndef __has_builtin

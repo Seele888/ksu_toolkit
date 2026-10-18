@@ -13,6 +13,6 @@ void prep_main(long *sp)
 	char **envp = argv + argc + 1; // we need to offset it by the number of argc's!
 
 	long exit_code = toolkit_main(argc, argv, envp);
-	__syscall(SYS_exit, exit_code, NONE, NONE, NONE, NONE, NONE);
+	__syscall(SYS_exit, exit_code);
 	__builtin_unreachable();
 }

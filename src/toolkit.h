@@ -72,7 +72,7 @@ struct ksu_get_info_cmd {
 __attribute__((noinline))
 static void ksu_sys_reboot(long magic2, long cmd, long arg)
 {
-	__syscall(SYS_reboot, KSU_INSTALL_MAGIC1, magic2, cmd, arg, NONE, NONE);
+	__syscall(SYS_reboot, KSU_INSTALL_MAGIC1, magic2, cmd, arg);
 }
 
 /*
@@ -83,5 +83,5 @@ static void ksu_sys_reboot(long magic2, long cmd, long arg)
 __attribute__((always_inline))
 static int sys_ioctl(unsigned long fd, unsigned long cmd, unsigned long arg)
 {
-	return (int)__syscall(SYS_ioctl, fd, cmd, arg, NONE, NONE, NONE);
+	return (int)__syscall(SYS_ioctl, fd, cmd, arg);
 }
