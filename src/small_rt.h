@@ -111,19 +111,18 @@ static long __syscall_raw(long n, long a, long b, long c, long d, long e, long f
 // usage: syscall(SYS_getuid), syscall(SYS_newuname, &buf)
 #define __syscall(...) __syscall_exp(__syscall_, __syscall_count_args(__VA_ARGS__))(__VA_ARGS__)
 
-#if 0 // this is here so YOU can copy-paste below C entry
 __attribute__((used))
 void prep_main(long *sp)
 {
-	long argc = *sp;
+	extern int main(int argc, char **argv, char **envp);
+	int argc = (int)*sp;
 	char **argv = (char **)(sp + 1);
 	char **envp = argv + argc + 1; // we need to offset it by the number of argc's!
 
-	long exit_code = c_main(argc, argv, envp);
+	long exit_code = main(argc, argv, envp);
 	__syscall(SYS_exit, exit_code);
 	__builtin_unreachable();
 }
-#endif
 
 // arch specific small entry points
 #if defined(__aarch64__)

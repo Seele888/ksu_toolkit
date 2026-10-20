@@ -41,7 +41,7 @@ send:
 }
 
 __attribute__((always_inline))
-static int toolkit_main(long argc, char **argv, char **envp)
+static int toolkit_main(int argc, char **argv, char **envp)
 {
 
 	unsigned int fd = 0;
