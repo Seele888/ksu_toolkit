@@ -24,6 +24,8 @@ char sucompat_seccomp_root_template[] = "[+] sucompat: 0 | seccomp: ? | root: ";
 uint64_t total_avg = 0;
 char total_avg_template[] = "[+] total avgs:   000000000\n";
 
+#define NONE 0
+
 cpu_set_t cpuset;
 
 #if defined(__aarch64__)
